@@ -1,0 +1,7 @@
+def create_user(user, password, email, consoles = [], *args):
+    username = user
+    password = password
+    email = email
+    consolesOwned = list(consoles)
+    print("User " + username + " has been registered with the email: " + email + ", and he owns: ")
+    print([str(item) for item in consoles])
