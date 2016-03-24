@@ -1,0 +1,123 @@
+from tkinter import *
+import tkinter.messagebox as tm
+
+import Users
+import re
+import sqlite3
+
+db = sqlite3.connect('game nebula.db')
+c = db.cursor()
+
+class RegistrationFrame(Frame):
+    def __init__(self, master):
+        super().__init__(master)
+
+        self.UserLabel = Label(self, text="Enter username")
+        self.PassLabel = Label(self, text="Enter Password")
+        self.PassReLabel = Label(self, text="Re-Enter Password")
+        self.EmailLabel = Label(self, text="Enter email")
+        self.ConsoleLabel = Label(self, text="Check all consoles you own")
+
+
+
+        self.UserEntry = Entry(self)
+        self.PassEntry = Entry(self, show="*")
+        self.PassReEntry = Entry(self, show="*")
+        self.EmailEntry = Entry(self)
+
+        self.v1 = IntVar()
+        self.v2 = IntVar()
+        self.v3 = IntVar()
+        self.v4 = IntVar()
+
+        self.X360Check = Checkbutton(self, text = 'Xbox 360', variable = self.v1)
+        self.XOneCheck = Checkbutton(self, text = 'Xbox One', variable = self.v2)
+        self.PS3Check = Checkbutton(self, text = 'PS3', variable = self.v3)
+        self.PS4Check = Checkbutton(self, text = 'PS4', variable = self.v4)
+
+
+        self.UserLabel.grid(row=0, sticky=E)
+        self.PassLabel.grid(row=1, sticky=E)
+        self.PassReLabel.grid(row=2, sticky=E)
+        self.EmailLabel.grid(row=3, sticky=E)
+        self.ConsoleLabel.grid(row=4, sticky=E)
+        self.X360Check.grid(row=4, column=1)
+        self.XOneCheck.grid(row=4, column=2)
+        self.PS3Check.grid(row=4, column=3)
+        self.PS4Check.grid(row=4, column=4)
+        self.UserEntry.grid(row=0, column=1)
+        self.PassEntry.grid(row=1, column=1)
+        self.PassReEntry.grid(row=2, column=1)
+        self.EmailEntry.grid(row=3, column=1)
+
+
+        self.regbtn = Button(self, text="Register", command = self._registration_btn_clickked)
+        self.regbtn.grid(columnspan=2)
+
+
+        self.pack()
+
+
+    def _registration_btn_clickked(self):
+        username = self.UserEntry.get()
+        password = self.PassEntry.get()
+        passwordRe = self.PassReEntry.get()
+        email = self.EmailEntry.get()
+
+        if len(self.UserEntry.get()) == 0 or len(self.PassEntry.get()) == 0\
+           or len(self.PassReEntry.get()) == 0 or len(self.EmailEntry.get()) == 0 :
+            print("Null Entry")
+        elif len(username) > 14 or len(username) < 4 :
+            print("Username must be between 4 and 15 characters")
+        elif len(password) > 14 or len(password) < 4:
+            print("Password must be between 4 and 15 characters")
+        elif not re.match("^[0-z]*$", username) or not re.match("^[0-z]*$", password):
+            print("No special characters allowed in username or password!")
+
+        else:
+
+            def CheckRegExists(username):
+                c.execute("SELECT name FROM UserData WHERE name=?", (username,))
+                data = c.fetchall()
+                if not data:
+                    return False
+                else:
+                    return True
+
+
+            if CheckRegExists(username) == True:
+                print("Username already taken")
+            else:
+                if password != passwordRe:
+                    print("Passwords don't match")
+                else:
+                    print("Registration Successful")
+                    c.execute('INSERT INTO UserData VALUES (?,?,?,?)', (username, password, email, ""))
+                    db.commit()
+
+
+                    #Used to pass consoles user owns to user object
+                    console = []
+
+                    if self.v1.get() == 1:
+                        console.append('Xbox 360')
+                        c.execute('INSERT INTO UserData (Consoles) VALUES ("Xbox 360")')
+                    if self.v2.get() == 1:
+                        console.append('Xbox One')
+                        c.execute('INSERT INTO UserData (Consoles) VALUES ("Xbox One")')
+                    if self.v3.get() == 1:
+                        console.append('PS3')
+                        c.execute('INSERT INTO UserData (Consoles) VALUES ("PS3")')
+                    if self.v4.get() == 1:
+                        console.append('PS4')
+                        c.execute('INSERT INTO UserData (Consoles) VALUES ("PS4")')
+                    Users.create_user(username, password, email, console)
+                    db.commit()
+                    db.close()
+
+
+
+
+root = Tk()
+lf = RegistrationFrame(root)
+root.mainloop()
