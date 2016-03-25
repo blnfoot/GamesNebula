@@ -59,7 +59,7 @@ class LoginFrame(Frame):
             if CheckUserExists(username) is True and CheckPassExists(password) is True:
                 print("Login Commplete")
             else:
-                print("Username or password doesn't exist")
+                print("Username or password is incorrect")
 
 
 
